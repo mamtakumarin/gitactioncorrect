@@ -1,0 +1,29 @@
+name: Deploy to Mac via SSH
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (so workflow has repo context)
+        uses: actions/checkout@v3
+
+      - name: Deploy to Mac via SSH and pull latest
+        uses: appleboy/ssh-action@v1.2.3
+        with:
+          host: ${{ secrets.MAC_HOST }}
+          username: ${{ secrets.MAC_USER }}
+          key: ${{ secrets.MAC_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            cd "${{ secrets.MAC_APP_PATH }}"
+            # ensure correct identity and set origin to ssh URL (optional)
+            # git remote set-url origin git@github.com:your-user/your-repo.git || true
+            git fetch --all
+            git reset --hard origin/master
+            echo "Deployed on $(date)"
